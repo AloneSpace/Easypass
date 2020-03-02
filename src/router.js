@@ -1,12 +1,31 @@
-import Index from './pages/Index.vue'
-import Settings from './pages/Settings.vue'
-import Reports from './pages/Reports.vue'
+import Vue from "vue";
+import Router from "vue-router";
 
-module.exports = {
+Vue.use(Router);
+
+export default new Router({
+  mode: process.env.IS_ELECTRON ? "hash" : "history",
+  base: process.env.BASE_URL,
   routes: [
-    { path: '/', component: Index },
-    { path: '/settings', component: Settings },
-    { path: '/reports', component: Reports },
-    { path : '*', redirect : '/' }
+    {
+      path: "/",
+      component: () => import("@/pages/Login")
+    },
+    {
+      path: "/dashboard",
+      component: () => import("@/pages/dashboard/Index"),
+      children: [
+        {
+          name: "Dashboard",
+          path: "/",
+          component: () => import("@/pages/dashboard/input/Input")
+        },
+        {
+          name: "History",
+          path: "/history",
+          component: () => import("@/pages/dashboard/history/History")
+        }
+      ]
+    }
   ]
-};
+});

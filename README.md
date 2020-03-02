@@ -1,25 +1,24 @@
-# Electron Vue Vuetify Boilerplate
+# easypass
 
-A customized fork of [electron-boilerplate](https://github.com/szwacz/electron-boilerplate)
-
-Credit for the foundation of this boilerplate goes completely to szwacz. It is a great start for electron projects
-in general! It even has a great initial testing setup (consider testing if you are not, you will love it... ok BUT
-you will find the results are worth the effort). 
-
-I added [Vue.js](https://vuejs.org/) and [Vuetify](https://vuetifyjs.com/en/) for a ready to go vue based electron 
-app build.
-
+## Project setup
 ```
-git clone {the repo}
+npm install
+```
 
-cd electron-vue-vuetify-boilerplate
+### Compiles and hot-reloads for development
+```
+npm run serve
+```
 
-yarn
+### Compiles and minifies for production
+```
+npm run build
+```
 
-yarn start
+### Lints and fixes files
+```
+npm run lint
+```
 
-... make it your own ... 
-```  
-
-Useful ? Ether tips appreciated 0x387006D751F266a2FB8De03B589Cf7a6e7c844A3
-
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
