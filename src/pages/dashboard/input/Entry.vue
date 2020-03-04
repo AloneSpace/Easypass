@@ -5,9 +5,7 @@
         <v-card-text>
           <v-card-title>
             <v-row align="center" justify="center">
-              <h2>
-                <v-icon>fas fa-pencil-alt</v-icon>&nbsp;กรอกข้อมูลผู้ใช้งาน
-              </h2>
+              <h2><v-icon>fas fa-sign-in-alt</v-icon>&nbsp;รับรถเข้า</h2>
             </v-row>
           </v-card-title>
           <v-form>
@@ -15,8 +13,7 @@
               <v-col cols="12" sm="6">
                 <v-text-field
                   label="วัน-เดือน-ปี เวลา / Date"
-                  name="vehicle_regis"
-                  id="vehicle_regi"
+                  v-model="datenow"
                   prepend-icon="far
                 fa-clock"
                   type="text"
@@ -27,8 +24,7 @@
               <v-col cols="12" sm="6">
                 <v-text-field
                   label="เลขที่ขับรถ / Serial Car Entry"
-                  name="vehicle_id"
-                  id="vehicle_id"
+                  v-model="vehicleID"
                   prepend-icon="far
                 fa-clock"
                   type="text"
@@ -40,8 +36,7 @@
               <v-col cols="12" sm="6">
                 <v-text-field
                   label="ชื่อ-สกุล / Fullname"
-                  name="fullname"
-                  id="fullname"
+                  v-model="fullname"
                   prepend-icon="far
                 fa-user"
                   type="text"
@@ -51,8 +46,7 @@
               <v-col cols="12" sm="6">
                 <v-text-field
                   label="เลขบัตรประชาชน / Citizen No."
-                  name="citizenID"
-                  id="citizenID"
+                  v-model="citizenID"
                   prepend-icon="far
                 fa-address-card"
                   type="text"
@@ -70,13 +64,13 @@
                   :prepend-icon="carLogo[selected]"
                   @change="setCarType()"
                   single-line
+                  return-object
                 ></v-select>
               </v-col>
               <v-col cols="12" sm="6">
                 <v-text-field
                   label="ทะเบียนรถยนต์ / Vehicle registration"
-                  name="vehicle_regis"
-                  id="vehicle_regi"
+                  v-model="vehicleRegistration"
                   prepend-icon="far fa-closed-captioning"
                   type="text"
                 />
@@ -84,18 +78,20 @@
             </v-row>
             <v-textarea
               auto-grow
+              v-model="address"
               label="ที่อยู่"
               rows="4"
               row-height="10"
-              shaped
+              :shape="shaped"
               prepend-icon="fas fa-map-marked-alt"
             ></v-textarea>
             <v-textarea
               auto-grow
+              v-model="comment"
               label="หมายเหตุ"
               rows="2"
               row-height="15"
-              shaped
+              :shape="shaped"
               prepend-icon="far fa-comment"
             ></v-textarea>
             <v-card-actions>
@@ -151,6 +147,13 @@ import moment from "moment";
 export default {
   name: "Entry",
   data: () => ({
+    vehicleRegistration: "",
+    vehicleType: "",
+    citizenID: "",
+    fullname: "",
+    address: "",
+    vehicleID: "",
+    comment: "",
     isReadData: false,
     datenow: "",
     carLogo: [
@@ -183,6 +186,7 @@ export default {
   },
   methods: {
     readDataFromCard() {
+      //! เปิด Card Reader
       this.isReadData = true;
     },
     setCarType() {
@@ -224,17 +228,12 @@ export default {
       this.datenow = `${getDate} ${getMonth} ${getYear} เวลา ${getHour}:${getMin} น.`;
     },
     sendData: () => {
-      var username = document.querySelector("input[name=username]").value;
-      var password = document.querySelector("input[name=password]").value;
       sweetalert
         .fire({
           icon: "success",
-          title: "ขอแสดงความยินดี",
-          text: username + " " + password
+          title: "ขอแสดงความยินดี"
         })
-        .then(() => {
-          console.log("Hello");
-        });
+        .then(() => {});
     }
   },
   watch: {

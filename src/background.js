@@ -1,26 +1,30 @@
 "use strict";
-
 import { app, protocol, BrowserWindow } from "electron";
 import path from "path";
 import {
   createProtocol
   /* installVueDevtools */
 } from "vue-cli-plugin-electron-builder/lib";
+import { Server } from "http";
 const isDevelopment = process.env.NODE_ENV !== "production";
+require("dotenv").config();
 const express = require("express");
 const appExpress = express();
+const session = require("express-session");
 const port = 80;
-const bodyParser = require("body-parser");
 const authentication = require("./controller/authentication.js");
 const cors = require("cors");
 
 appExpress.use(cors({ credentials: true, origin: true }));
-appExpress.use(bodyParser.json());
 appExpress.use(
-  bodyParser.urlencoded({
-    extended: true
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: true }
   })
 );
+appExpress.use(express.json());
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -38,25 +42,26 @@ function createWindow() {
     height: 1080,
     webPreferences: {
       nodeIntegration: true
-    }
+    },
+    icon: path.join(__static, "")
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
     if (!process.env.IS_TEST) win.webContents.openDevTools();
-    appExpress.get("/api/v1/users", (req, res) => {
-      // res.setHeader("Access-Control-Allow-Origin", "*");
-      // res.setHeader("Access-Control-Allow-Credentials", "true");
-      // res.setHeader("Access-Control-Max-Age", "1800");
-      // res.setHeader("Access-Control-Allow-Headers", "content-type");
-      // res.setHeader(
-      //   "Access-Control-Allow-Methods",
-      //   "PUT, POST, GET, DELETE, PATCH, OPTIONS"
-      // );
-      res.json({ msg: "This is CORS-enabled for all origins!" });
-    });
+
+    //*GET APIs ZONE
+    appExpress.get("/session", authentication.getSession);
+    appExpress.get("/api/v1/users/", authentication.getUsers);
+
+    //*POSTAPIs ZONE
     appExpress.post("/api/v1/signin/", authentication.checkLogin);
+    appExpress.post("/api/v1/users/add/", authentication.addUser);
+    appExpress.post("/api/v1/users/edit/", authentication.editUser);
+    appExpress.post("/api/v1/users/delete/", authentication.deleteUser);
+
+    //! Start
     appExpress.listen(port, () => {
       console.log("Start server at port " + port + ".");
     });
@@ -64,6 +69,7 @@ function createWindow() {
     createProtocol("app");
     // Load the index.html when not in development
     win.loadURL("app://./index.html");
+    //! อย่าลืมมาเพิ่มหลังจากเขียนเสร็จด้วย
   }
 
   win.on("closed", () => {

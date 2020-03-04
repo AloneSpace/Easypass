@@ -5,6 +5,11 @@ module.exports = {
   },
   pluginOptions: {
     electronBuilder: {
+      builderOptions: {
+        win: {
+          icon: "./public/favicon.ico"
+        }
+      },
       chainWebpackMainProcess: config => {
         // Chain webpack config for electron main process only
       },

@@ -6,24 +6,18 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
     <title><%= htmlWebpackPlugin.options.title %></title>
-    <link
-      href="https://fonts.googleapis.com/css?family=Prompt&display=swap&subset=thai"
-      rel="stylesheet"
-    />
-    <script
-      src="https://kit.fontawesome.com/4959a2c381.js"
-      crossorigin="anonymous"
-    ></script>
+    <link href="/vendor/fontawesome/css/all.css" rel="stylesheet" />
+    <!--load all styles -->
     <link
       rel="stylesheet"
-      href="//cdn.materialdesignicons.com/4.9.95/css/materialdesignicons.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css?family=Material+Icons"
-      rel="stylesheet"
+      href="/vendor/materialdesignicons/css/materialdesignicons.min.css"
     />
   </head>
   <style>
+    @font-face {
+      font-family: Prompt;
+      src: url("/fonts/Prompt/Prompt-Regular.ttf");
+    }
     #app {
       font-family: "Prompt", monospace;
     }

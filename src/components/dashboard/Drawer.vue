@@ -12,7 +12,7 @@
         <v-list-item-content>
           <v-list-item-title
             ><font style="color: white;"
-              >Easypass Management</font
+              >ระบบบันทึกเวลาเข้าออก</font
             ></v-list-item-title
           >
         </v-list-item-content>
@@ -44,7 +44,6 @@
 </template>
 
 <script>
-import router from "@/router";
 export default {
   name: "Drawer",
   data() {
@@ -66,13 +65,13 @@ export default {
         {
           name: "admin",
           title: "ผู้ดูแลระบบ",
-          path: "/admin",
+          path: "/settings",
           icon: "fas fa-user"
         },
         {
           name: "signout",
           title: "ออกจากระบบ",
-          path: "/signout",
+          path: "/",
           icon: "fas fa-sign-out-alt"
         }
       ],
@@ -82,12 +81,6 @@ export default {
       expandOnHover: false,
       background: true
     };
-  },
-  methods: {
-    setActive: function(name) {
-      console.log(name);
-      console.log(router.path);
-    }
   },
   computed: {
     bg() {

@@ -24,6 +24,11 @@ export default new Router({
           name: "History",
           path: "/history",
           component: () => import("@/pages/dashboard/history/History")
+        },
+        {
+          name: "Settings",
+          path: "/settings",
+          component: () => import("@/pages/dashboard/settings/Index")
         }
       ]
     }

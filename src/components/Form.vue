@@ -16,49 +16,42 @@
               <v-card-title>
                 <v-row align="center" justify="center">
                   <h2>
-                    <v-icon>fas fa-sign-in-alt</v-icon>&nbsp;เข้าสู่ระบบ Easy
-                    Management
+                    <v-icon>fas fa-sign-in-alt</v-icon
+                    >&nbsp;ล็อคอินเพื่อเข้าสู่<br />ระบบบันทึกเวลาเข้าออก
                   </h2>
                 </v-row>
               </v-card-title>
-              <v-form>
+              <v-form ref="form" v-model="valid" lazy-validation>
                 <v-text-field
-                  v-model="usernameVal"
-                  label="ผู้ใช้ / Username"
-                  name="username"
-                  id="username"
-                  prepend-icon="fas fa-user"
-                  type="text"
-                />
+                  v-model="username"
+                  :rules="usernameRules"
+                  label="ชื่อผู้ใช้งาน / Username"
+                  prepend-icon="far fa-user"
+                  required
+                ></v-text-field>
+
                 <v-text-field
-                  v-model="passwordVal"
-                  :append-icon="show1 ? 'fas fa-eye-slash' : 'fas fa-eye'"
-                  :rules="[rules.required, rules.min]"
-                  :type="show1 ? 'text' : 'password'"
-                  name="password"
-                  id="password"
+                  v-model="password"
+                  :rules="passwordRules"
+                  :append-icon="
+                    showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'
+                  "
                   label="รหัสผ่าน / Password"
-                  hint="อย่างน้อย 8 ตัวอักษร"
-                  counter
-                  @click:append="show1 = !show1"
                   prepend-icon="fas fa-lock"
+                  :type="showPassword ? 'text' : 'password'"
+                  @click:append="showPassword = !showPassword"
+                  required
                 ></v-text-field>
                 <v-card-actions>
                   <v-row align="center" justify="center">
                     <v-btn
-                      class="ma-2"
-                      :loading="loading4"
-                      :disabled="loading4"
-                      color="info"
-                      @click="loader = 'loading4'"
+                      :disabled="!valid"
+                      color="success"
+                      class="mr-4"
+                      @click="sendLogin"
                       x-large
                     >
                       <v-icon left>fas fa-paper-plane</v-icon>เข้าสู่ระบบ
-                      <template v-slot:loader>
-                        <span class="custom-loader">
-                          <v-icon light>cached</v-icon>
-                        </span>
-                      </template>
                     </v-btn>
                   </v-row>
                 </v-card-actions>
@@ -81,106 +74,67 @@
 </template>
 
 <script>
+import axios from "axios";
 import sweetalert from "sweetalert2";
 import router from "@/router";
-import axios from "axios";
 
 export default {
   name: "Form",
   data: () => ({
-    time: null,
+    valid: true,
+    showPassword: false,
     shaped: true,
     raised: true,
-    show1: false,
-    usernameVal: "",
-    passwordVal: "",
-    rules: {
-      required: value => !!value || "กรุณากรอก Text นี้",
-      min: v => v.length >= 8 || "ต้องการ 8 ตัวอักษรขึ้นไป"
-    },
-    loader: null,
-    loading4: false
+    username: "",
+    usernameRules: [v => !!v || "กรุณากรอก ชื่อผู้ใชงาน"],
+    password: "",
+    passwordRules: [v => !!v || "กรุณากรอก รหัสผ่าน"]
   }),
   methods: {
-    sendLogin: () => {
-      var username = document.querySelector("input[name=username]").value;
-      var password = document.querySelector("input[name=password]").value;
-      axios
-        .post("http://localhost/api/v1/signin/", {
-          username: username,
-          password: password
-        })
-        .then(response => {
-          if (response.data.status == "failed") {
-            sweetalert.fire({
-              icon: "error",
-              title: "เกิดข้อผิพลาดในระบบ",
-              text: username + " " + password
-            });
-          }
-          if (response.data.status == "success") {
-            sweetalert
-              .fire({
-                icon: "success",
-                title: "ขอแสดงความยินดี",
-                text: username + " " + password
-              })
-              .then(() => {
-                router.push({ name: "Dashboard" });
+    sendLogin() {
+      if (this.$refs.form.validate()) {
+        axios
+          .post("http://localhost/api/v1/signin/", {
+            username: this.username,
+            password: this.password
+          })
+          .then(response => {
+            console.log(response);
+            if (response.data.message == "failed") {
+              sweetalert.fire({
+                icon: "error",
+                title: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+                text: "กรุณาใส่ให้ถูกต้อง"
               });
-          }
-        });
-    }
-  },
-  watch: {
-    loader() {
-      const l = this.loader;
-      this[l] = !this[l];
-      setTimeout(() => {
-        this[l] = false;
-        this.sendLogin();
-      }, 3000);
-      this.loader = null;
+            }
+            if (response.data.message == "success") {
+              sweetalert
+                .fire({
+                  icon: "success",
+                  title: "ขอแสดงความยินดี",
+                  text: "เราจะพาคุณไปยังหน้าจัดการระบบ"
+                })
+                .then(() => {
+                  axios
+                    .get("http://localhost/session")
+                    .then(function(response) {
+                      if (response.data.loggedin == true) {
+                        router.push({ name: "Dashboard" });
+                      }
+                    })
+                    .catch(function(error) {
+                      // handle error
+                      console.log(error);
+                    })
+                    .then(function() {
+                      // always executed
+                    });
+                  // router.push({ name: "Dashboard" });
+                });
+            }
+          });
+      }
     }
   }
 };
 </script>
-
-<style>
-.custom-loader {
-  animation: loader 1s infinite;
-  display: flex;
-}
-@-moz-keyframes loader {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-@-webkit-keyframes loader {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-@-o-keyframes loader {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes loader {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>

@@ -1,0 +1,31 @@
+version: "3.1"
+
+services:
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - 8181:80
+    depends_on:
+      - database
+    network_mode: host
+    environment:
+      PMA_HOST: "192.168.1.43"
+      MYSQL_USERNAME: root
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      TZ: "Asia/Bangkok"
+  database:
+    container_name: database
+    image: mariadb
+    restart: always
+    volumes:
+      - ./database:/var/lib/mysql
+    ports:
+      - 3306:3306
+    network_mode: host
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_USER_PASS}

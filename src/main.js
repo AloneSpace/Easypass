@@ -8,7 +8,6 @@ Vue.config.productionTip = false;
 
 new Vue({
   vuetify,
-  el: "#app",
   vueaxios,
   router,
   render: h => h(App)
