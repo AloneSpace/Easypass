@@ -43,7 +43,7 @@ const csv = require("@fast-csv/format");
 import path from "path";
 import sweetalert from "sweetalert2";
 import moment from "moment";
-import mysql from "mysql";
+import axios from "axios";
 export default {
   name: "backupDatabase",
   data: () => ({
@@ -62,19 +62,9 @@ export default {
         });
       } else {
         var pathFolder = this.Folder[0].path.replace(/\\/g, "\\\\") + "\\\\";
-        var connection = mysql.createConnection({
-          host: "192.168.1.43",
-          database: "easypassDB",
-          user: "root",
-          password: "easypassPW",
-          port: 3306
-        });
         var result = [["id", "username", "password", "fullname", "type"]];
-        connection.connect();
-        connection.query("SELECT * FROM auth", function(err, datas) {
-          if (err) throw err;
-          datas.forEach(data => {
-            // console.log(result);
+        axios.get("http://localhost/api/v1/users/").then(response => {
+          response.data.users.forEach(data => {
             result.push({
               id: data.id,
               username: data.username,
@@ -83,23 +73,23 @@ export default {
               type: data.type
             });
           });
-          csv
-            .writeToPath(
-              path.resolve(
-                pathFolder,
-                "backup_" + moment().format("YYYY_MM_DD_HHmmss") + ".csv"
-              ),
-              result
-            )
-            .on("error", err => console.error(err))
-            .on("finish", () => {
-              sweetalert.fire({
-                icon: "success",
-                title: "ทำการ BACKUP ข้อมูลคุณตามที่",
-                text: pathFolder.replace(/\\\\/g, "\\")
-              });
-            });
         });
+        csv
+          .writeToPath(
+            path.resolve(
+              pathFolder,
+              "backup_" + moment().format("YYYY_MM_DD_HHmmss") + ".csv"
+            ),
+            result
+          )
+          .on("error", err => console.error(err))
+          .on("finish", () => {
+            sweetalert.fire({
+              icon: "success",
+              title: "ทำการ BACKUP ข้อมูลคุณตามที่",
+              text: pathFolder.replace(/\\\\/g, "\\")
+            });
+          });
       }
     }
   }
