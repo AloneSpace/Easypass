@@ -4,7 +4,8 @@
       <v-col cols="2"></v-col>
       <v-col cols="7">
         <h1>
-          <v-icon>fas fa-pencil-alt</v-icon>หน้ากรอก Form ข้อมูลลงในระบบ
+          <v-icon style="padding-right: 20px;">fas fa-pencil-alt</v-icon
+          >หน้ากรอก Form ข้อมูลลงในระบบ
         </h1>
         <br />
         <v-divider style="border-bottom: solid 2px black;"></v-divider>
@@ -15,7 +16,8 @@
                 v-for="item in items"
                 :key="item.tab"
                 @click="changeComponents(item.content)"
-              >{{ item.tab }}</v-tab>
+                >{{ item.tab }}</v-tab
+              >
             </v-tabs>
           </v-col>
         </v-row>

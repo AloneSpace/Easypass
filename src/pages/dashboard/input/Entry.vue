@@ -142,6 +142,8 @@
 
 <script>
 import sweetalert from "sweetalert2";
+import axios from "axios";
+import jsPDF from "jspdf";
 import moment from "moment";
 
 export default {
@@ -169,8 +171,6 @@ export default {
     shaped: true,
     raised: true,
     show1: false,
-    usernameVal: "",
-    passwordVal: "",
     rules: {
       required: value => !!value || "กรุณากรอก Text นี้",
       min: v => v.length >= 8 || "ต้องการ 8 ตัวอักษรขึ้นไป"
@@ -227,13 +227,23 @@ export default {
       var getYear = Number(moment().format("YYYY")) + 543;
       this.datenow = `${getDate} ${getMonth} ${getYear} เวลา ${getHour}:${getMin} น.`;
     },
-    sendData: () => {
+    sendData() {
+      axios.post("http://localhost/api/v1/database/addDatabase", []).then({
+        //โพสต์เสร็จสั่งปริ้น
+      });
       sweetalert
         .fire({
           icon: "success",
           title: "ขอแสดงความยินดี"
         })
-        .then(() => {});
+        .then(() => {
+          this.printToPDF();
+        });
+    },
+    printToPDF() {
+      var doc = new jsPDF();
+      doc.text("Hello world!", 10, 10);
+      doc.save("a4.pdf");
     }
   },
   watch: {
@@ -242,7 +252,7 @@ export default {
       this[l] = !this[l];
       setTimeout(() => {
         this[l] = false;
-        this.sendLogin();
+        this.sendData();
       }, 3000);
       this.loader = null;
     }

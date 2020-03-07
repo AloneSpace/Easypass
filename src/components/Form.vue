@@ -42,6 +42,10 @@
                   @click:append="showPassword = !showPassword"
                   required
                 ></v-text-field>
+                <v-checkbox
+                  v-model="rememberme"
+                  label="จดจำฉัน (ออกโปรแกรมโดยไม่ต้องล็อคอินใหม่)"
+                ></v-checkbox>
                 <v-card-actions>
                   <v-row align="center" justify="center">
                     <v-btn
@@ -82,24 +86,33 @@ export default {
   name: "Form",
   data: () => ({
     valid: true,
+    rememberme: false,
     showPassword: false,
     shaped: true,
     raised: true,
     username: "",
-    usernameRules: [v => !!v || "กรุณากรอก ชื่อผู้ใชงาน"],
+    usernameRules: [
+      v => !!v || "กรุณากรอก ชื่อผู้ใช้งาน",
+      v => v != "/[^a-z][0-9]/" || "กรุณากรอกให้อยู่ในรูปแบบตัวอักษรภาษาอังกฤษ"
+    ],
     password: "",
     passwordRules: [v => !!v || "กรุณากรอก รหัสผ่าน"]
   }),
+  created() {
+    axios.get("http://localhost/session").then(response => {
+      if (response.data.rememberme) router.push({ name: "Dashboard" });
+    });
+  },
   methods: {
     sendLogin() {
       if (this.$refs.form.validate()) {
         axios
           .post("http://localhost/api/v1/signin/", {
             username: this.username,
-            password: this.password
+            password: this.password,
+            rememberme: this.rememberme
           })
           .then(response => {
-            console.log(response);
             if (response.data.message == "failed") {
               sweetalert.fire({
                 icon: "error",
@@ -118,12 +131,11 @@ export default {
                   axios
                     .get("http://localhost/session")
                     .then(function(response) {
-                      if (response.data.loggedin == true) {
+                      if (response.data) {
                         router.push({ name: "Dashboard" });
                       }
                     })
                     .catch(function(error) {
-                      // handle error
                       console.log(error);
                     })
                     .then(function() {

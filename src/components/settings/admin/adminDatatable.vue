@@ -21,24 +21,37 @@
 
             <v-card-text>
               <v-container>
-                <v-row>
-                  <v-text-field
-                    v-model="editedItem.id"
-                    type="hidden"
-                    :hidden="hidden"
-                  ></v-text-field>
+                <v-row align="center" justify="center">
                   <v-col cols="6">
                     <v-text-field
                       v-model="editedItem.username"
-                      label="ชื่อผู้ใช้"
+                      label="ชื่อผู้ใช้ / Username"
+                      prepend-icon="fas fa-user"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="6">
                     <v-text-field
                       v-model="editedItem.fullname"
-                      label="ชื่อ-นามสกุล"
+                      label="ชื่อ-นามสกุล / Fullnamee"
+                      prepend-icon="fas fa-id-card-alt"
                     ></v-text-field>
                   </v-col>
+                </v-row>
+                <v-row align="center" justify="center">
+                  <v-text-field
+                    v-model="editedItem.password"
+                    :append-icon="
+                      showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'
+                    "
+                    :label="
+                      formTitle == 'เพิ่มผู้ใช้งาน'
+                        ? 'รหัสผ่าน / Password (กรุณาใส่ด้วยนะครับ)'
+                        : 'รหัสผ่าน (ถ้าไม่ใส่เราจะถือว่าใช้รหัสผ่านเดิม)'
+                    "
+                    prepend-icon="fas fa-lock"
+                    :type="showPassword ? 'text' : 'password'"
+                    @click:append="showPassword = !showPassword"
+                  ></v-text-field>
                 </v-row>
               </v-container>
             </v-card-text>
@@ -62,28 +75,36 @@
     </template>
     <template v-slot:item.action="{ item }">
       <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
-      <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
+      <v-icon
+        small
+        @click="deleteItem(item)"
+        v-show="item.type != 'super_admin'"
+        >mdi-delete</v-icon
+      >
     </template>
     <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize">Reset</v-btn>
+      <v-btn color="danger" x-large>ไม่มีฐานข้อมูลอยู่ในระบบ</v-btn>
     </template>
   </v-data-table>
 </template>
 
 <script>
 import axios from "axios";
+import sweetalert from "sweetalert2";
+
 export default {
   name: "adminDatatable",
   data: () => ({
     dialog: false,
     search: "",
+    showPassword: false,
     hidden: true,
     headers: [
       {
         text: "#",
         align: "start",
         sortable: false,
-        value: "id"
+        value: "count"
       },
       { text: "ชื่อผู้ใช้", value: "username" },
       { text: "ชื่อ-นามสกุล", value: "fullname" },
@@ -93,13 +114,18 @@ export default {
     users: [],
     editedIndex: -1,
     editedItem: {
-      id: "",
+      id: 0,
       username: "",
-      fullname: ""
+      password: "",
+      fullname: "",
+      type: "user"
     },
     defaultItem: {
+      id: 0,
       username: "",
-      fullname: ""
+      password: "",
+      fullname: "",
+      type: "user"
     }
   }),
 
@@ -125,13 +151,13 @@ export default {
         var json = response.data.users;
         for (var i = 0; i < json.length; i++) {
           this.users.push({
-            id: i + 1,
+            count: i + 1,
+            id: Number(json[i].id),
             username: json[i].username,
-            fullname: json[i].name,
+            fullname: json[i].fullname,
             type: json[i].type
           });
         }
-        console.log(this.users);
       });
     },
 
@@ -142,10 +168,36 @@ export default {
     },
 
     deleteItem(item) {
-      console.log(item);
-      // const index = this.users.indexOf(item);
-      // confirm("Are you sure you want to delete this item? " + item) &&
-      //   this.users.splice(index, 1);
+      const index = this.users.indexOf(item);
+      sweetalert
+        .fire({
+          title: "คุณแน่ใจหรือว่าจะลบผู้ใช้ " + this.users[index].username,
+          text: "คุณจะไม่สามารถกู้คืนได้อีก",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "ใช่ ฉันจะลบ",
+          cancelButtonText: "ยกเลิก"
+        })
+        .then(result => {
+          if (result.value) {
+            axios
+              .post("http://localhost/api/v1/users/delete", {
+                username: this.users[index].username
+              })
+              .then(response => {
+                this.users.splice(index, 1);
+                if (response.data.message == "success") {
+                  sweetalert.fire(
+                    "ขอแสดงความยินดี",
+                    "คุณได้ทำการลบผู้ใช้งานสำเร็จ",
+                    "success"
+                  );
+                }
+              });
+          }
+        });
     },
 
     close() {
@@ -158,10 +210,68 @@ export default {
 
     save() {
       if (this.editedIndex > -1) {
-        //Edit
-        Object.assign(this.users[this.editedIndex], this.editedItem);
+        axios
+          .post("http://localhost/api/v1/users/edit", {
+            id: this.editedItem.id,
+            username: this.editedItem.username,
+            password: this.editedItem.password,
+            fullname: this.editedItem.fullname
+          })
+          .then(response => {
+            if (response.data.message === "exist") {
+              //! มีชื่อผู้ใช้ในระบบ
+              sweetalert.fire({
+                icon: "error",
+                title: "ขออภัยชื่อผู้ใช้ชื่อนี้มีอยู่แล้วในระบบ",
+                text: "กรุณาลองใหม่ด้วยชื่ออื่น"
+              });
+            } else if (
+              response.data.message === "notupdate" ||
+              response.data.message === "updatedwithnewPassword" ||
+              response.data.message === "updatedwithsamePassword"
+            ) {
+              //* ทำงานเสร็จสิ้น
+              sweetalert.fire({
+                icon: "success",
+                title: "ขอแสดงความยินดี",
+                text: "คุณได้ทำการแก้ไขผู้ใช้คนนี้สำเร็จ"
+              });
+              Object.assign(this.users[this.editedIndex], this.editedItem);
+            } else {
+              sweetalert.fire({
+                icon: "error",
+                title: "ขออภัยเกิดข้อผิดพลาดในระบบ",
+                text: "กรุณาลองใหม่อีกครั้งนึง"
+              });
+            }
+          });
       } else {
-        this.users.push(this.editedItem);
+        //Add
+        axios
+          .post("http://localhost/api/v1/users/add/", {
+            username: this.editedItem.username,
+            password: this.editedItem.password,
+            fullname: this.editedItem.fullname
+          })
+          .then(response => {
+            console.log(response);
+            if (response.data.message == "success") {
+              //* ไม่พบ User
+              sweetalert.fire({
+                icon: "success",
+                title: "ขอแสดงความยินดี",
+                text: "เราได้ทำการเพิ่มผู้ใช้คนนี้ลงไปในระบบ"
+              });
+              this.users.push(this.editedItem);
+            } else {
+              //! พบ User
+              sweetalert.fire({
+                icon: "error",
+                title: "ขออภัยเราพบผู้ใช้งานคนนี้",
+                text: "กรุณาลองใส่ผู้ใช้งานอื่น"
+              });
+            }
+          });
       }
       this.close();
     }

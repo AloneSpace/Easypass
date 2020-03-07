@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="2"></v-col>
       <v-col cols="7">
-        <h1><v-icon>fas fa-pencil-alt</v-icon> Admin Settings</h1>
+        <h1><v-icon>fas fa-cog</v-icon> Admin Settings</h1>
         <br />
         <v-divider style="border-bottom: solid 2px black;"></v-divider>
         <v-row align="center" justify="center">
@@ -24,7 +24,7 @@
       <v-card width="1200px" :raised="raised" :shaped="shaped">
         <v-card-text>
           <adminDatatable v-if="Page == 'Users'"></adminDatatable>
-          <backupDatatable v-else></backupDatatable>
+          <backupDatabase v-else></backupDatabase>
         </v-card-text>
         <v-card-actions>
           <v-container>
@@ -40,12 +40,12 @@
 
 <script>
 import adminDatatable from "@/components/settings/admin/adminDatatable";
-import backupDatatable from "@/components/settings/admin/backupDatatable";
+import backupDatabase from "@/components/settings/admin/backupDatabase";
 export default {
   name: "Admin",
   components: {
     adminDatatable,
-    backupDatatable
+    backupDatabase
   },
   data: () => ({
     tab: null,
@@ -57,9 +57,11 @@ export default {
       { tab: "Backup ข้อมูล", content: "backup" }
     ]
   }),
+  created() {
+    this.Page = "Users";
+  },
   methods: {
     changeComponents(components) {
-      console.log(this.Page);
       this.Page = components;
     }
   }

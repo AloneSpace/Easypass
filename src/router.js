@@ -8,6 +8,7 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     {
+      name: "Login",
       path: "/",
       component: () => import("@/pages/Login")
     },
@@ -31,6 +32,11 @@ export default new Router({
           component: () => import("@/pages/dashboard/settings/Index")
         }
       ]
+    },
+    {
+      name: "Logout",
+      path: "/logout",
+      component: () => import("@/pages/Logout")
     }
   ]
 });

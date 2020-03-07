@@ -1,7 +1,12 @@
 <template>
   <v-container class="fill-height" fluid>
     <v-row align="center" justify="center" style="padding-top: 50px;">
-      <v-card width="900px" :raised="raised" :shaped="shaped">
+      <v-card
+        width="900px"
+        :raised="raised"
+        :shaped="shaped"
+        v-if="isReadBarcode"
+      >
         <v-card-text>
           <v-card-title>
             <v-row align="center" justify="center">
@@ -126,6 +131,15 @@
           </v-container>
         </v-card-actions>
       </v-card>
+      <v-card v-else>
+        <barcode
+          :value="barcode.value"
+          :tag="barcode.tag"
+          :options="barcode.options"
+        >
+          Show this if the rendering fails.
+        </barcode>
+      </v-card>
     </v-row>
   </v-container>
 </template>
@@ -138,6 +152,7 @@ export default {
   name: "Exit",
   data: () => ({
     datenow: "",
+    isReadBarcode: false,
     carLogo: [
       "fas fa-truck-pickup",
       "fas fa-car",
@@ -158,7 +173,21 @@ export default {
       min: v => v.length >= 8 || "ต้องการ 8 ตัวอักษรขึ้นไป"
     },
     loader: null,
-    loading4: false
+    loading4: false,
+    barcode: {
+      value: "579",
+      tag: "svg",
+      options: {
+        lineColor: "#ff7069",
+        fontSize: 32,
+        font: "Courier",
+        width: 3,
+        height: 60,
+        marginBottom: 60,
+        format: "CODE128",
+        background: "#ccffff"
+      }
+    }
   }),
   mounted() {
     this.interval = setInterval(this.time, 1000);

@@ -1,21 +1,23 @@
 "use strict";
-import { app, protocol, BrowserWindow } from "electron";
+import { app, protocol, BrowserWindow, remote } from "electron";
 import path from "path";
 import {
   createProtocol
   /* installVueDevtools */
 } from "vue-cli-plugin-electron-builder/lib";
-import { Server } from "http";
 const isDevelopment = process.env.NODE_ENV !== "production";
 require("dotenv").config();
 const express = require("express");
 const appExpress = express();
+const connection = require("connect-timeout");
 const session = require("express-session");
 const port = 80;
 const authentication = require("./controller/authentication.js");
+const database = require("./controller/database.js");
 const cors = require("cors");
 
 appExpress.use(cors({ credentials: true, origin: true }));
+appExpress.use(connection("60s"));
 appExpress.use(
   session({
     secret: "keyboard cat",
@@ -42,10 +44,11 @@ function createWindow() {
     height: 1080,
     webPreferences: {
       nodeIntegration: true
+      // devTools: false
     },
+
     icon: path.join(__static, "")
   });
-
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
@@ -54,17 +57,31 @@ function createWindow() {
     //*GET APIs ZONE
     appExpress.get("/session", authentication.getSession);
     appExpress.get("/api/v1/users/", authentication.getUsers);
+    appExpress.get("/api/v1/signout/", authentication.logout);
+    appExpress.get("/api/v1/database/getDatabase", database.getDatabase);
 
     //*POSTAPIs ZONE
     appExpress.post("/api/v1/signin/", authentication.checkLogin);
     appExpress.post("/api/v1/users/add/", authentication.addUser);
     appExpress.post("/api/v1/users/edit/", authentication.editUser);
     appExpress.post("/api/v1/users/delete/", authentication.deleteUser);
+    appExpress.post("/api/v1/database/addDatabase", database.addDatabase);
 
     //! Start
-    appExpress.listen(port, () => {
-      console.log("Start server at port " + port + ".");
+    appExpress
+      .listen(port, () => {
+        console.log("Start server at port " + port + ".");
+      })
+      .on("error", function(err) {
+        console.log("on error handler");
+        console.log(err);
+      });
+
+    process.on("uncaughtException", function(err) {
+      console.log("process.on handler");
+      console.log(err);
     });
+    win.webContents.closeDevTools();
   } else {
     createProtocol("app");
     // Load the index.html when not in development

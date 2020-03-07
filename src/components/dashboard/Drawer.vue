@@ -64,14 +64,14 @@ export default {
         },
         {
           name: "admin",
-          title: "ผู้ดูแลระบบ",
+          title: "การตั้งค่า",
           path: "/settings",
-          icon: "fas fa-user"
+          icon: "fas fa-cog"
         },
         {
           name: "signout",
           title: "ออกจากระบบ",
-          path: "/",
+          path: "/logout",
           icon: "fas fa-sign-out-alt"
         }
       ],
