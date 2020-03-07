@@ -5,7 +5,9 @@
         <v-card-text>
           <v-card-title>
             <v-row align="center" justify="center">
-              <h2><v-icon>fas fa-sign-in-alt</v-icon>&nbsp;รับรถเข้า</h2>
+              <h2>
+                <v-icon>fas fa-sign-in-alt</v-icon>&nbsp;รับรถเข้า
+              </h2>
             </v-row>
           </v-card-title>
           <v-form>
@@ -40,7 +42,7 @@
                   prepend-icon="far
                 fa-user"
                   type="text"
-                  disable
+                  disabled
                 />
               </v-col>
               <v-col cols="12" sm="6">
@@ -50,7 +52,7 @@
                   prepend-icon="far
                 fa-address-card"
                   type="text"
-                  disable
+                  disabled
                 />
               </v-col>
             </v-row>
@@ -84,6 +86,7 @@
               row-height="10"
               :shape="shaped"
               prepend-icon="fas fa-map-marked-alt"
+              disabled
             ></v-textarea>
             <v-textarea
               auto-grow
@@ -96,20 +99,8 @@
             ></v-textarea>
             <v-card-actions>
               <v-row align="center" justify="center">
-                <v-btn
-                  class="ma-2"
-                  :loading="loading4"
-                  :disabled="loading4"
-                  color="info"
-                  @click="loader = 'loading4'"
-                  x-large
-                >
+                <v-btn class="ma-2" :loading="loading" color="info" @click="sendData" x-large>
                   <v-icon left>fas fa-paper-plane</v-icon>ส่งข้อมูล
-                  <template v-slot:loader>
-                    <span class="custom-loader">
-                      <v-icon light>cached</v-icon>
-                    </span>
-                  </template>
                 </v-btn>
               </v-row>
             </v-card-actions>
@@ -123,13 +114,7 @@
           </v-container>
         </v-card-actions>
       </v-card>
-      <v-card
-        width="500px"
-        height="200px"
-        :raised="raised"
-        :shaped="shaped"
-        v-else
-      >
+      <v-card width="500px" height="200px" :raised="raised" :shaped="shaped" v-else>
         <v-card-text class="text-center" style="padding-top: 70px;">
           <v-row align="center" justify="center">
             <v-btn @click="readDataFromCard">ดึงข้อมูลจากบัตรประชาชน</v-btn>
@@ -143,7 +128,6 @@
 <script>
 import sweetalert from "sweetalert2";
 import axios from "axios";
-import jsPDF from "jspdf";
 import moment from "moment";
 
 export default {
@@ -172,11 +156,9 @@ export default {
     raised: true,
     show1: false,
     rules: {
-      required: value => !!value || "กรุณากรอก Text นี้",
-      min: v => v.length >= 8 || "ต้องการ 8 ตัวอักษรขึ้นไป"
+      required: value => !!value || "กรุณากรอก Text นี้"
     },
-    loader: null,
-    loading4: false
+    loading: false
   }),
   mounted() {
     this.interval = setInterval(this.time, 1000);
@@ -187,7 +169,21 @@ export default {
   methods: {
     readDataFromCard() {
       //! เปิด Card Reader
-      this.isReadData = true;
+      axios.get("http://127.0.0.1:5000/getData").then(response => {
+        if (response.data.status == "inactive")
+          sweetalert.fire({
+            icon: "error",
+            title: "กรุณาตรวจสอบเครื่องอ่านบัตร"
+          });
+        this.fullname = response.data.thainame.replace(/#/g, " ");
+        this.citizenID = response.data.idnumber;
+        this.vehicleID =
+          moment().format("YYYYMMDDHHmm") + this.citizenID.slice(0, 5);
+        this.address = response.data.address
+          .replace("####", " ")
+          .replace(/#/g, " ");
+      });
+      setInterval(() => (this.isReadData = true), 100);
     },
     setCarType() {
       switch (this.selectedCarType) {
@@ -228,33 +224,24 @@ export default {
       this.datenow = `${getDate} ${getMonth} ${getYear} เวลา ${getHour}:${getMin} น.`;
     },
     sendData() {
-      axios.post("http://localhost/api/v1/database/addDatabase", []).then({
-        //โพสต์เสร็จสั่งปริ้น
-      });
-      sweetalert
-        .fire({
-          icon: "success",
-          title: "ขอแสดงความยินดี"
-        })
-        .then(() => {
-          this.printToPDF();
-        });
-    },
-    printToPDF() {
-      var doc = new jsPDF();
-      doc.text("Hello world!", 10, 10);
-      doc.save("a4.pdf");
-    }
-  },
-  watch: {
-    loader() {
-      const l = this.loader;
-      this[l] = !this[l];
-      setTimeout(() => {
-        this[l] = false;
-        this.sendData();
-      }, 3000);
-      this.loader = null;
+      this.loading = true;
+      if (this.selectedCarType) {
+        console.log("เลือกรถก่อน");
+      } else {
+        this.loading = false;
+        console.log("เลือกรถหรือยัง");
+      }
+      // axios.post("http://localhost/api/v1/database/addDatabase", []).then({
+      //   //โพสต์เสร็จสั่งปริ้น
+      // });
+      // sweetalert
+      //   .fire({
+      //     icon: "success",
+      //     title: "ขอแสดงความยินดี"
+      //   })
+      //   .then(() => {
+      //     this.printToPDF();
+      //   });
     }
   }
 };

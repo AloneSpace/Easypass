@@ -1,14 +1,5 @@
-const {
-  ThaiCardReader,
-  EVENTS,
-  MODE
-} = require("@privageapp/thai-national-id-reader");
+const axios = require("axios");
 
-const reader = new ThaiCardReader();
-reader.readMode = MODE.PERSONAL_PHOTO;
-reader.autoRecreate = true;
-reader.startListener();
-
-reader.on(EVENTS.READING_COMPLETE, obj => {
-  console.log(obj);
+axios.get("http://127.0.0.1:5000/get_data").then(response => {
+  console.log(response.data);
 });
