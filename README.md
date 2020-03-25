@@ -5,7 +5,7 @@
 - นาย นนทกร อินทอง (หน้าที่ UX/UI Designer, ออกแบบ Backgroud)
 ```
 
-## Project setup
+### ติดตั้งการใช้งาน
 ```
 npm install
 ```
